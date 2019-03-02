@@ -1,0 +1,40 @@
+.now{
+  display:flex;
+  flex-flow:column wrap;
+  align-items: center;
+}
+.container{
+  padding:0rpx;
+}
+.cityCho{
+  font-size:24px;
+}
+.nowtemperature{
+  font-size:48px;
+}
+.img{
+width:200rpx;
+height: 200rpx;
+}
+.weatherCondition{
+  font-size:20px;
+}
+.forecast{
+  margin-top:30px;
+
+}
+
+.forecast1{
+  display:flex;
+  flex-direction:row;
+  justify-content: space-between;
+  width:350px;
+  font-size:18px;
+  height:100px;
+ 
+}
+.img1{
+  width:60rpx;
+  height: 60rpx;
+}
+ 
