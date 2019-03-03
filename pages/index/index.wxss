@@ -30,7 +30,7 @@ height: 200rpx;
   justify-content: space-between;
   width:350px;
   font-size:18px;
-  height:100px;
+  margin-bottom: 10px;
  
 }
 .img1{

@@ -1,44 +1,92 @@
 var app = getApp();
-// 引用百度地图微信小程序JSAPI模块 
+// 引用腾讯地图微信小程序JSAPI模块 
+var QQMapWX = require('../../libs/qqmap-wx-jssdk.js');
+var qqmapsdk;
 Page({
   data: {
   },
   onLoad: function () {
     console.log('onLoad');
     var that = this;
-    that.getLocation();
+    qqmapsdk = new QQMapWX({
+      key: 'VV7BZ-MDH3W-WYKRJ-OEW4W-KUV6S-XSFRM'
+    });
+    that.getAthuorize();
+  },
+  getAthuorize: function () {
+    var that = this;
+    var isAthuorize;
+    wx.getSetting({
+      success(res) {
+        if (!res.authSetting['scope.userLocation']) {
+          wx.authorize({
+            scope: 'scope.userLocation',
+            success() {
+              console.log('success');
+              that.getLocation();
+            },
+            fail(error) {
+              console.log(error);
+              wx.showModal({
+                title:'警告',
+                content:'您点击了拒绝授权,将无法正常显示所在地天气情况,点击确定重新获取授权。',
+                success(res){
+                  console.log('确定');
+                  console.log(res.confirm);
+                  if(res.confirm){
+                    wx.openSetting({
+                    success:(res)=>{
+                      console.log(res);
+                      if (res.authSetting['scope.userLocation']){
+                        wx.authorize({
+                          scope: 'scope.userLocation',
+                          success() {
+                            console.log('success');
+                            that.getLocation();
+                          },
+                          fail(error){
+                            console.log(error);
+                          }})
+                      }
+                    }
+                  })
+                }
+              }})
+            }
+          })
+        } else {
+          that.getLocation();
+        }
+      }
+    });
+
   },
   //经纬度
-  getLocation:function(){
+  getLocation: function () {
     var that = this;
     wx.getLocation({
-        type:'wgs84',
-        success(res){
-          var latitude=res.latitude;
-          var longtitude=res.longitude;
-          console.log('lat：'+latitude+'long:'+longtitude);
-          that.getCity(latitude,longtitude); 
-        }
+      type: 'wgs84',
+      success(res) {
+        var latitude = res.latitude;
+        var longtitude = res.longitude;
+        console.log('lat：' + latitude + 'long:' + longtitude);
+        that.getCity(latitude, longtitude);
+      }
     })
-    },
+  },
+
     //逆地址解析
     //当前定位城市
     getCity:function(latitude,longtitude){
       var that = this;
-      var url ="https://api.map.baidu.com/geocoder/v2/";
-      var params={
-        ak:"f1h0Tudq2CnFOCvXR9GnvFmSi5peEC2r",
-        output:"json",
-        location:latitude+","+longtitude
-      };
-      wx.request({
-        url:url,
-        data:params,
+      qqmapsdk.reverseGeocoder({
+        location:latitude+","+longtitude,
         success(res){
-          var city = res.data.result.addressComponent.city;
-          var district=res.data.result.addressComponent.district;
-          var street=res.data.result.addressComponent.street;
-          console.log(res.data.result);
+          console.log(res);
+          var city = res.result.address_component.city;
+          var district = res.result.address_component.district;
+          var street = res.result.address_component.street;
+          console.log(res.result);
         that.setData({
           city:city,
           district,district,
@@ -47,6 +95,9 @@ Page({
         var data=that.data;
         that.getCityWeather(longtitude,latitude);
       
+        },
+        fail(error){
+          console.log(error);
         }
       })
     },
@@ -81,37 +132,18 @@ Page({
     },
     chooseCity:function(){
       var that=this;
-      var isAuthorize;
-      wx.getSetting({
-        success(res){
-console.log(res.authSetting['scope.userLocation']);
-var isAuthorize = res.authSetting['scope.userLocation'];
-console.log(isAuthorize);
-          console.log("success");
-          if(!res.authSetting['scope.userLocation']){
-            wx.authorize({
-              scope:'scope.userLocation',
-              success(){
-   var isAuthorize = res.authSetting['scope.userLocation'];
+      wx.chooseLocation({
+      success(res) {
+      that.getCity(res.latitude, res.longitude);
+      that.getCityWeather(res.longitude, res.latitude);
+      },
+      fail() {
+      console.log("fail");
+      }
+      })
+      }
+      })
 
-            }
-          })
-        }
-          if (isAuthorize) {
-            wx.chooseLocation({
-              success(res) {
-                that.getCity(res.latitude, res.longitude);
-                that.getCityWeather(res.longitude, res.latitude);
-              },
-              fail() {
-                console.log("fail");
-              }
-            })
-          }}});
-          }
-
-})
-  
 
 
 
